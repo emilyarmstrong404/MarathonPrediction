@@ -64,8 +64,13 @@ print("w,b found by gradient descent, w: ", w, "b ", b)
 m = X.shape[0]
 accuracy_counter = 0
 for i in range(m):
+    a = "No"
     prediction = np.dot(X[i], w) + b
-    print(f"prediction: {prediction:0.1f}, target value: {Y[i]:0.1f}")
-    if round(prediction, 1) == round(Y[i], 1):
+    errorA = round(prediction, 2) - round(Y[i], 2)
+    errorB = round(Y[i], 2) - round(prediction, 2)
+    if (errorA <= 0.05 * Y[i] and errorA >= 0) or (errorB <= 0.05 * Y[i] and errorB >= 0):
         accuracy_counter += 1
+        a = "Match"
+    print(f"prediction: {prediction:0.2f}, target value: {Y[i]:0.2f}, match: {a}")
+
 print("Accuracy: ", accuracy_counter/m)
