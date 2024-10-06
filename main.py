@@ -3,21 +3,29 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 s = StandardScaler()
 
+#Read dataset into data frame
 df = pd.read_csv('MarathonData.csv')
 
-df['Category'].fillna(df['Category'].mode()[0], inplace=True)  # Filling with mode
-df['CrossTraining'].fillna(0, inplace=True)  # Filling with 0
-print(df.isnull().sum())
+#Populate all empty fields in the CrossTraining and Category columns
+df.fillna({'CrossTraining': 0}, inplace=True)
+df.fillna({'Category': df['Category'].mode()[0]}, inplace=True)
 
+#Remove outliers
+df = df[(df["sp4week"] < 14) & (df["sp4week"] > 10)].reset_index(drop=True)
+
+#Load X (input) and Y(target values) numpy arrays
 X = df[["sp4week", "km4week"]].values
 Y = df[["MarathonTime"]].values.flatten()
 
+#Checking all fields in the data is populated
 print("Checking for NaN in X and Y:")
 print(np.isnan(X).sum())
 print(np.isnan(Y).sum())
 
+#Run input data through the scikit-learn StandardScaler
 X = s.fit_transform(X)
 
+#Set initial values
 b_init = 0
 w_init = np.zeros(2)
 iterations = 3000
@@ -48,19 +56,23 @@ def gradient_descent(x, y, w_in, b_in, gradient_function, alpha, num_iters):
         w = w - alpha * dj_dw
         b = b - alpha * dj_db
 
+        #Every 100 iterations print the cost (to show the cost is decreasing in gradient descent)
         if i % 100 == 0:
             cost = compute_cost(x, y, w, b)
             print(f"Iteration {i}, Cost: {cost}")
 
+        #Checks w and b have values
         if np.isnan(w).any() or np.isnan(b):
             print("Warning: NaN detected in weights or bias.")
             break
 
     return w, b
 
+#Run gradient descent
 w,b = gradient_descent(X ,Y, w_init, b_init, compute_gradient, learning_rate, iterations)
 print("w,b found by gradient descent, w: ", w, "b ", b)
 
+#Calculating the percentage of test predictions are within 5% of the target value
 m = X.shape[0]
 accuracy_counter = 0
 for i in range(m):
