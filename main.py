@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import PolynomialFeatures
 s = StandardScaler()
 
 #Read dataset into data frame
@@ -25,11 +27,13 @@ print(np.isnan(Y).sum())
 #Run input data through the scikit-learn StandardScaler
 X = s.fit_transform(X)
 
+X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size=0.25,random_state=10)
+
 #Set initial values
 b_init = 0
 w_init = np.zeros(2)
 iterations = 3000
-learning_rate = 0.001
+learning_rate = 0.01
 
 def compute_cost(x, y, w, b):
     m = x.shape[0]
@@ -69,20 +73,20 @@ def gradient_descent(x, y, w_in, b_in, gradient_function, alpha, num_iters):
     return w, b
 
 #Run gradient descent
-w,b = gradient_descent(X ,Y, w_init, b_init, compute_gradient, learning_rate, iterations)
+w, b = gradient_descent(X_train, Y_train, w_init, b_init, compute_gradient, learning_rate, iterations)
 print("w,b found by gradient descent, w: ", w, "b ", b)
 
 #Calculating the percentage of test predictions are within 5% of the target value
-m = X.shape[0]
+m = X_test.shape[0]
 accuracy_counter = 0
 for i in range(m):
     a = "No"
-    prediction = np.dot(X[i], w) + b
-    errorA = round(prediction, 2) - round(Y[i], 2)
-    errorB = round(Y[i], 2) - round(prediction, 2)
-    if (errorA <= 0.05 * Y[i] and errorA >= 0) or (errorB <= 0.05 * Y[i] and errorB >= 0):
+    prediction = np.dot(X_test[i], w) + b
+    errorA = round(prediction, 2) - round(Y_test[i], 2)
+    errorB = round(Y_test[i], 2) - round(prediction, 2)
+    if (errorA <= 0.05 * Y_test[i] and errorA >= 0) or (errorB <= 0.05 * Y_test[i] and errorB >= 0):
         accuracy_counter += 1
         a = "Match"
-    print(f"prediction: {prediction:0.2f}, target value: {Y[i]:0.2f}, match: {a}")
+    print(f"prediction: {prediction:0.2f}, target value: {Y_test[i]:0.2f}, match: {a}")
 
 print("Accuracy: ", accuracy_counter/m)
